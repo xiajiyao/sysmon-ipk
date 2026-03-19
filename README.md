@@ -48,10 +48,10 @@ sysmon-ipk/
 ## 当前包信息
 
 - 包名：`sysmon-server`
-- 当前版本：`2.0.2`
+- 当前版本：`2.0.3`
 - 当前架构：`x86_64`
 - 默认端口：`8999`
-- 当前构建产物：`sysmon-server_2.0.2_x86_64.ipk`
+- 当前构建产物：`sysmon-server_2.0.3_x86_64.ipk`
 
 ## 本地开发
 
@@ -134,13 +134,12 @@ sysmon-server_2.0.2_x86_64.ipk
 
 - `python3`
 - `python3-flask`
-- `python3-blinker`
 
 如果目标设备缺少依赖，可先执行：
 
 ```sh
 opkg update
-opkg install python3 python3-flask python3-blinker
+opkg install python3 python3-flask
 ```
 
 ### 安装包
@@ -148,7 +147,7 @@ opkg install python3 python3-flask python3-blinker
 将 `.ipk` 上传到设备后执行：
 
 ```sh
-opkg install ./sysmon-server_2.0.2_x86_64.ipk
+opkg install ./sysmon-server_2.0.3_x86_64.ipk
 ```
 
 安装完成后，`postinst` 会自动：
