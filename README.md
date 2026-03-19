@@ -48,10 +48,10 @@ sysmon-ipk/
 ## 当前包信息
 
 - 包名：`sysmon-server`
-- 当前版本：`2.0.0`
+- 当前版本：`2.0.1`
 - 当前架构：`x86_64`
 - 默认端口：`8999`
-- 当前构建产物：`sysmon-server_2.0.0_x86_64.ipk`
+- 当前构建产物：`sysmon-server_2.0.1_x86_64.ipk`
 
 ## 本地开发
 
@@ -123,7 +123,7 @@ brew install gnu-tar
 生成文件示例：
 
 ```text
-sysmon-server_2.0.0_x86_64.ipk
+sysmon-server_2.0.1_x86_64.ipk
 ```
 
 ## 在 OpenWrt 上安装
@@ -148,7 +148,7 @@ opkg install python3 python3-flask python3-blinker
 将 `.ipk` 上传到设备后执行：
 
 ```sh
-opkg install ./sysmon-server_2.0.0_x86_64.ipk
+opkg install ./sysmon-server_2.0.1_x86_64.ipk
 ```
 
 安装完成后，`postinst` 会自动：
