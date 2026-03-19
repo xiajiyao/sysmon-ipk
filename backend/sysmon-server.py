@@ -9,11 +9,19 @@ import random
 import subprocess
 import threading
 from flask import Flask, jsonify, send_from_directory
+from werkzeug.serving import WSGIRequestHandler
 
 PORT = int(os.environ.get('SYSMON_PORT', '8999'))
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
 
 app = Flask(__name__, static_folder=STATIC_DIR)
+
+
+class QuietRequestHandler(WSGIRequestHandler):
+    """Suppress per-request access logs while keeping real errors visible."""
+
+    def log_request(self, code='-', size='-'):
+        pass
 
 # --- Helpers ---
 
@@ -276,4 +284,10 @@ def static_files(path):
     return send_from_directory(STATIC_DIR, path)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=PORT, debug=False)
+    app.run(
+        host='0.0.0.0',
+        port=PORT,
+        debug=False,
+        use_reloader=False,
+        request_handler=QuietRequestHandler,
+    )

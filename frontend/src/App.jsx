@@ -4,6 +4,7 @@ import { Move, Scaling, Palette } from 'lucide-react';
 const GRID_SIZE = 40;
 const MIN_W = 5;
 const MIN_H = 4;
+const LAYOUT_STORAGE_KEY = 'sysmon-layout-v1';
 
 const THEMES = {
   green: { primary: '#5fa371', secondary: '#6ba2b0', accent: '#bda355', name: 'MATRIX_GRN' },
@@ -12,11 +13,62 @@ const THEMES = {
   purple: { primary: '#8c73a6', secondary: '#67a19d', accent: '#b5737f', name: 'NEON_PURP' }
 };
 
+const DEFAULT_LAYOUT = [
+  { id: 'cpu', type: 'CPU', x: 0, y: 0, w: 8, h: 7 },
+  { id: 'memory', type: 'MEMORY', x: 8, y: 0, w: 7, h: 7 },
+  { id: 'storage', type: 'STORAGE', x: 15, y: 0, w: 8, h: 7 },
+  { id: 'network', type: 'NETWORK', x: 0, y: 7, w: 9, h: 8 },
+  { id: 'docker', type: 'DOCKER', x: 9, y: 7, w: 14, h: 8 },
+  { id: 'thermal', type: 'THERMAL', x: 0, y: 15, w: 11, h: 6 },
+  { id: 'services', type: 'SERVICES', x: 11, y: 15, w: 12, h: 6 },
+];
+
 const hexToRgb = (hex) => {
   let r = parseInt(hex.slice(1, 3), 16);
   let g = parseInt(hex.slice(3, 5), 16);
   let b = parseInt(hex.slice(5, 7), 16);
   return `${r}, ${g}, ${b}`;
+};
+
+const clampGridValue = (value, fallback, min = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(min, Math.round(parsed)) : fallback;
+};
+
+const normalizeLayout = (layout) => {
+  if (!Array.isArray(layout)) return DEFAULT_LAYOUT;
+
+  const savedById = new Map(layout.map((item) => [item?.id, item]));
+
+  return DEFAULT_LAYOUT.map((item) => {
+    const saved = savedById.get(item.id);
+    if (!saved) return item;
+
+    return {
+      ...item,
+      x: clampGridValue(saved.x, item.x),
+      y: clampGridValue(saved.y, item.y),
+      w: clampGridValue(saved.w, item.w, MIN_W),
+      h: clampGridValue(saved.h, item.h, MIN_H),
+    };
+  });
+};
+
+const loadLayout = () => {
+  if (typeof window === 'undefined') return DEFAULT_LAYOUT;
+
+  try {
+    const raw = window.localStorage.getItem(LAYOUT_STORAGE_KEY);
+    return raw ? normalizeLayout(JSON.parse(raw)) : DEFAULT_LAYOUT;
+  } catch {
+    return DEFAULT_LAYOUT;
+  }
+};
+
+const saveLayout = (layout) => {
+  if (typeof window === 'undefined') return;
+
+  window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(normalizeLayout(layout)));
 };
 
 // --- Live Data Hook ---
@@ -304,16 +356,7 @@ export default function App() {
   const data = useSystemData();
   const [isEditing, setIsEditing] = useState(false);
   const [theme, setTheme] = useState('green');
-
-  const [layout, setLayout] = useState([
-    { id: 'cpu', type: 'CPU', x: 0, y: 0, w: 8, h: 7 },
-    { id: 'memory', type: 'MEMORY', x: 8, y: 0, w: 7, h: 7 },
-    { id: 'storage', type: 'STORAGE', x: 15, y: 0, w: 8, h: 7 },
-    { id: 'network', type: 'NETWORK', x: 0, y: 7, w: 9, h: 8 },
-    { id: 'docker', type: 'DOCKER', x: 9, y: 7, w: 14, h: 8 },
-    { id: 'thermal', type: 'THERMAL', x: 0, y: 15, w: 11, h: 6 },
-    { id: 'services', type: 'SERVICES', x: 11, y: 15, w: 12, h: 6 },
-  ]);
+  const [layout, setLayout] = useState(loadLayout);
 
   const [interaction, setInteraction] = useState(null);
   const containerRef = useRef(null);
@@ -375,6 +418,16 @@ export default function App() {
       window.removeEventListener('touchend', handlePointerUp);
     };
   }, [interaction, handlePointerMove, handlePointerUp]);
+
+  const handleEditToggle = () => {
+    if (isEditing) {
+      saveLayout(layout);
+      setIsEditing(false);
+      return;
+    }
+
+    setIsEditing(true);
+  };
 
   const renderWidgetContent = (type) => {
     switch (type) {
@@ -479,7 +532,7 @@ export default function App() {
               ))}
             </div>
             <button
-              onClick={() => setIsEditing(!isEditing)}
+              onClick={handleEditToggle}
               className={`px-6 py-2 font-bold uppercase tracking-widest border-2 transition-all duration-200 flex items-center gap-2 ${isEditing ? 'bg-theme text-black border-theme glow-active' : 'bg-black text-theme border-theme hover:bg-theme-dim'}`}
             >
               {isEditing ? '[ 保存排版 ]' : '[ 自由排版 ]'}
