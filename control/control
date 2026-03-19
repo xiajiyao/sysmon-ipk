@@ -1,0 +1,8 @@
+Package: sysmon-server
+Version: 2.0.0
+Architecture: x86_64
+Maintainer: local
+Depends: python3, python3-flask, python3-blinker
+Section: utils
+Priority: optional
+Description: System monitoring web dashboard for OpenWrt (Python + Flask)
