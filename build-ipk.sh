@@ -5,7 +5,7 @@ set -e
 export COPYFILE_DISABLE=1
 
 PKG=sysmon-server
-VER=2.0.1
+VER=2.0.2
 WORKDIR=$(mktemp -d)
 trap 'rm -rf "$WORKDIR"' EXIT
 

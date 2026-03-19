@@ -4,10 +4,12 @@
 import os
 import json
 import glob
+import logging
 import time
 import random
 import subprocess
 import threading
+import flask.cli
 from flask import Flask, jsonify, send_from_directory
 from werkzeug.serving import WSGIRequestHandler
 
@@ -22,6 +24,13 @@ class QuietRequestHandler(WSGIRequestHandler):
 
     def log_request(self, code='-', size='-'):
         pass
+
+
+def configure_server_logging():
+    """Silence Flask/Werkzeug startup noise while preserving error logs."""
+
+    flask.cli.show_server_banner = lambda *args, **kwargs: None
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
 # --- Helpers ---
 
@@ -284,6 +293,7 @@ def static_files(path):
     return send_from_directory(STATIC_DIR, path)
 
 if __name__ == '__main__':
+    configure_server_logging()
     app.run(
         host='0.0.0.0',
         port=PORT,
